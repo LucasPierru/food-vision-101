@@ -1,23 +1,57 @@
-import logo from './logo.svg';
 import './App.css';
 
+import { useState } from 'react';
+import { CLASS_NAMES } from './classNames.js'
+
+
+
 function App() {
+  const [image, setImage] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [predictionIndex, setPredictionIndex] = useState();
+  const [predictionProb, setPredictionProb] = useState();
+
+  const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+
+  const predict = async() => {
+    setImage(imageUrl);
+    try {
+      const response = fetch('http://localhost:3001/prediction', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          imageUrl: imageUrl,
+        })
+      })
+      const data = await response;
+      const { index, prob } = await data.json()
+      setPredictionProb(prob);
+      setPredictionIndex(index);
+      setImageUrl('');
+    } catch(error) {
+      console.log(error)
+    }
+  }
+
+  function onInputChange (event) {
+    setImageUrl(event.target.value);
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {
+        image ? <img width='400px' src={image} alt='food'/> : null
+      }
+      {
+        predictionProb && predictionIndex 
+        ? <h2>Food predicted: {capitalize(CLASS_NAMES[predictionIndex].replace(/_/g," "))}, Confidence: {(predictionProb*100).toPrecision(4)}%</h2> 
+        : null
+      }
+      <input onChange={onInputChange} value={imageUrl}/>
+      <button onClick={predict}>
+        Predict
+      </button>
     </div>
   );
 }
