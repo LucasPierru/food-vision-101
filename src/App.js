@@ -13,19 +13,17 @@ function App() {
 
   const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
-
   const predict = async() => {
     setImage(imageUrl);
     try {
-      const response = fetch('http://localhost:3001/prediction', {
+      const response = await fetch('http://localhost:3001/prediction', {
         method: 'post',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           imageUrl: imageUrl,
         })
       })
-      const data = await response;
-      const { index, prob } = await data.json()
+      const { index, prob } = await response.json();
       setPredictionProb(prob);
       setPredictionIndex(index);
       setImageUrl('');
@@ -45,8 +43,7 @@ function App() {
       }
       {
         predictionProb && predictionIndex 
-        ? <h2>Food predicted: {capitalize(CLASS_NAMES[predictionIndex].replace(/_/g," "))}, Confidence: {(predictionProb*100).toPrecision(4)}%</h2> 
-        : null
+        && <h2>Food predicted: {capitalize(CLASS_NAMES[predictionIndex].replace(/_/g," "))}, Confidence: {(predictionProb*100).toPrecision(4)}%</h2> 
       }
       <input onChange={onInputChange} value={imageUrl}/>
       <button onClick={predict}>
